@@ -34,6 +34,7 @@ hands = mp_hands.Hands(static_image_mode=False,
 # -------------------- Creating a server for MATLAB --------------------------
 # Create a TCP/IP socket
 sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
 # Bind socket to port
 server_address = ('localhost', 10000)
@@ -160,9 +161,14 @@ while True:
         break  # Break the inner loop to wait for a new connection
 
     finally:
+        # Send 'STOP' message to the client
+        data = 'STOP'
+        connection.sendall(data.encode())
+
         # Clean up the connection
         print('Closing connection', file=sys.stderr)
         connection.close()
+        sock.close()
         cap.release()
         cv2.destroyAllWindows()
         break
